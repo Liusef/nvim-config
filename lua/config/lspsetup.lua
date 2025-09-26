@@ -1,52 +1,49 @@
 -- This file must be loaded after lazy.nvim
-local lspconfig = require('lspconfig')
+-- local lspconfig = require('lspconfig')
 
 -- Automated LSP setup for Neovim using lspconfig
--- Enable Lsp for some language
-local lsp_setup = function(server, capabilities)
-    lspconfig[server].setup({capabilities = capabilities})
-end
-
 local capabilities = require('blink.cmp').get_lsp_capabilities()
 
-lsp_setup("lua_ls", capabilities)
-lsp_setup("clangd", capabilities)
-lsp_setup("pyright",  capabilities)
-lsp_setup("gopls", capabilities)
-lsp_setup("ts_ls", capabilities)
+-- Enable LSP for a given server and config
+local lsp_setup = function(server, config)
+    vim.lsp.config(server, config)
+    vim.lsp.enable(server)
+end
+
+-- Enable LSP with no additional config other than capabilities
+local lsp_basic = function(server)
+    lsp_setup(server, {capabilities = capabilities})
+end
+
+
+lsp_basic("clangd")
+lsp_basic("pyright")
+lsp_basic("gopls")
+lsp_basic("ts_ls")
 
 -- Manual LSP setup for bash
-lspconfig.bashls.setup {
+lsp_setup('bashls', {
   filetypes = { 'bash', 'sh', 'zsh', 'bashrc', 'zshrc' },
   capabilities = capabilities
-}
+})
 
 -- Manual LSP setup for lua
-lspconfig.lua_ls.setup {
+lsp_setup('lua_ls', {
   capabilities = capabilities,
   settings = {
     Lua = {
-      runtime = {
-        -- Tell the language server which version of Lua you're using
-        -- (most likely LuaJIT in the case of Neovim)
-        version = 'LuaJIT',
-      },
+      runtime = { version = 'LuaJIT' },
       diagnostics = {
         -- Get the language server to recognize the `vim` global
         globals = {
-          'vim',
+          "vim",
           'require'
         },
       },
-      workspace = {
-        -- Make the server aware of Neovim runtime files
-        library = vim.api.nvim_get_runtime_file("", true),
-      },
-      -- Do not send telemetry data containing a randomized but unique identifier
-      telemetry = {
-        enable = false,
-      },
+      workspace = { library = vim.api.nvim_get_runtime_file("", true) },
+      telemetry = { enable = false },
     },
   },
-}
+})
+
 
